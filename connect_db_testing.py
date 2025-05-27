@@ -4,14 +4,6 @@ import smtplib
 import logging
 from logging.handlers import TimedRotatingFileHandler
 
-# logger=logging.getLogger()
-# logger.setLevel(logging.INFO)
-# handler=TimedRotatingFileHandler(filename = "logs/daily_logs.log",when = "midnight", interval = 1 , backupCount = 7)
-# handler.setLevel(logging.INFO)
-# formatter=logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
-# handler.setFormatter(formatter)
-# logger.addHandler(handler)
-
 class Sql_database:
     def connect_to_db(self):
         # This method returns the connection object
@@ -209,17 +201,11 @@ class Sql_database:
         logger=logging.getLogger()
         logger.setLevel(logging.INFO)
         handler=TimedRotatingFileHandler(filename = "logs/daily_logs",when = "midnight", interval = 1 , backupCount = 7)
-        handler.setLevel(logging.INFO)
+        handler.setLevel(logging.ERROR)
+        handler.setLevel(logging.WARNING)
         formatter=logging.Formatter('%(asctime)s - %(levelname)s - %(message)s - %(funcName)s')
         handler.setFormatter(formatter)
         logger.addHandler(handler)
-        logger2=logging.getLogger()
-        logger2.setLevel(logging.WARNING)
-        handler2=TimedRotatingFileHandler(filename = "logs/daily_logs",when = "midnight", interval = 1 , backupCount = 7)
-        handler2.setLevel(logging.WARNING)
-        formatter2=logging.Formatter('%(asctime)s - %(levelname)s - %(message)s - %(funcName)s')
-        handler2.setFormatter(formatter2)
-        logger2.addHandler(handler2)
         
         connection_obj=self.check_db_connection()
         curr=connection_obj.cursor()
@@ -231,10 +217,10 @@ class Sql_database:
                 curr.execute(u_name)
                 fetch_name=curr.fetchone()
                 if fetch_name:
-                    logger2.warning("User name already exist")
+                    logger.warning("User name already exist")
                     return sign_up_user_name()
             except Exception as e:
-                logger.info(f"Something went wrong -> {e} ")
+                logger.error(f"Something went wrong -> {e} ")
         sign_up_user_name()
 
 
@@ -249,13 +235,13 @@ class Sql_database:
                     if re.search(pass_pattern,password):
                         logger.info("Valid password")
                     else:
-                        logger2.warning("Enter a valid password")
+                        logger.warning("Enter a valid password")
                         return sign_up_password()
                 else:
-                    logger2.warning("Password does not match")
+                    logger.warning("Password does not match")
                     return sign_up_password()
             except Exception as e:
-                logger.info(f"Something went wrong -> {e}")
+                logger.error(f"Something went wrong -> {e}")
         sign_up_password()
 
 
@@ -270,13 +256,13 @@ class Sql_database:
                     curr.execute(num)
                     fetch_num=curr.fetchone()
                     if fetch_num:
-                        logger2.warning("Phone number already exist")
+                        logger.warning("Phone number already exist")
                         return sign_up_phone_number()
                 else:
-                    logger2.warning("Enter a valid number")
+                    logger.warning("Enter a valid number")
                     return sign_up_phone_number()
             except Exception as e:
-                logger.info(f"Something went wrong -> {e}")  
+                logger.error(f"Something went wrong -> {e}")  
         sign_up_phone_number()
 
 
@@ -291,10 +277,10 @@ class Sql_database:
                     curr.execute(mail)
                     fetch_mail=curr.fetchone()
                     if fetch_mail:
-                        logger2.warning("Mail id already exist")
+                        logger.warning("Mail id already exist")
                         return sign_up_mail_id() 
                 else:
-                    logger2.warning("Enter a valid mail id")
+                    logger.warning("Enter a valid mail id")
                     return sign_up_mail_id()
                 
                 # sender="niranjanrox56@gmail.com"
@@ -306,17 +292,17 @@ class Sql_database:
                 # server.sendmail(sender,receiver,message)
                 # logger.info(f"Email has been sent to {mail_id}")
             except Exception as e:
-                logger.info(f"Something went wrong -> {e}")  
+                logger.error(f"Something went wrong -> {e}")  
         sign_up_mail_id()
 
         def insert_value():
             try:
                 insert=f"INSERT INTO sign_up_page (user_name,user_pass,phone_number,mail_id) VALUES ('{username}','{password}','{phone_number}','{mail_id}')"
-                curr.execute(insert)
+                curr.execute()
                 connection_obj.commit()
                 logger.info("Inserted into DB")
             except Exception as e:
-                logger2.warning(f"Something went wrong -> {e}")
+                logger.error(f"Something went wrong -> {e}")
         insert_value()
 
 database=Sql_database()
