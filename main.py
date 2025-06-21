@@ -5,6 +5,7 @@ from libs.UserDb import UserDb
 from itsdangerous import URLSafeTimedSerializer,SignatureExpired
 from login_parameter import Login
 from configparser import ConfigParser
+from phonenumbers import COUNTRY_CODE_TO_REGION_CODE
 file='/home/niranjan/projectsql/login_page/libs/config.ini'
 config=ConfigParser()
 config.read(file)
@@ -35,47 +36,67 @@ def index():
 
 @app.route('/signup')
 def sign_up_index():
-   return render_template("sign_up.html")
+    country_code_list = []
+    for code, regions in COUNTRY_CODE_TO_REGION_CODE.items():
+        for region in regions:
+            country_code_list.append((region, code))
+            break
+    country_code_list.sort()
+    return render_template("sign_up.html", country_codes=country_code_list)
 
-@app.route('/signuppage',methods=["POST"])
+
+@app.route('/signuppage', methods=["GET", "POST"])
 def sign_up_page_index():
-    obj=Login()
+    country_code_list = []
+    for code, regions in COUNTRY_CODE_TO_REGION_CODE.items():
+        for region in regions:
+            country_code_list.append((region, code))
+            break
+    country_code_list.sort()
+    obj = Login()
+    if request.method == "GET":
+        print("Country codes:", country_code_list)
+        print("HELLO")
+        return render_template("sign_up.html", country_codes=country_code_list)
+
     if request.method == "POST":
-        name=request.form.get("name")
-        password=request.form.get("password")
-        confirm_password=request.form.get("confirm_password")
-        number=request.form.get("number")
-        mail=request.form.get("mail")
-        check=obj.get_all_details(name,password,confirm_password,number,mail)
+        name = request.form.get("name")
+        password = request.form.get("password")
+        confirm_password = request.form.get("confirm_password")
+        number = request.form.get("number")
+        country_code = request.form.get("country_code")
+        mail = request.form.get("mail")
+        full_number = country_code + number
+        check = obj.get_all_details(name, password, confirm_password, full_number, mail)
         if "Username already exist" in check:
-            user_error='Username already exists.Try using a different name.'
-            return render_template("sign_up.html",user_error=user_error)
-        if "Password does not match" in check :
-            pass_error='Password does not match'
-            return render_template("sign_up.html",pass_error=pass_error)
+            user_error = 'Username already exists. Try using a different username.'
+            return render_template("sign_up.html", user_error=user_error, country_codes=country_code_list)
+        if "Password does not match" in check:
+            pass_error = 'Password does not match'
+            return render_template("sign_up.html", pass_error=pass_error, country_codes=country_code_list)
         if "Enter valid password" in check:
-            pass_error2='Enter valid password.Password must have minimum 10 characters.'
-            return render_template("sign_up.html",pass_error2=pass_error2)
+            pass_error2 = 'Enter valid password. Password must have minimum 10 characters.'
+            return render_template("sign_up.html", pass_error2=pass_error2, country_codes=country_code_list)
         if "Enter valid number" in check:
-            num_error= 'Enter a valid phone number'
-            return render_template("sign_up.html",num_error=num_error)
+            num_error = 'Enter a valid phone number'
+            return render_template("sign_up.html", num_error=num_error, country_codes=country_code_list)
         if "Number already exist" in check:
-            num_error2='Phone number already exists'
-            return render_template("sign_up.html",num_error2=num_error2)
+            num_error2 = 'Phone number already exists'
+            return render_template("sign_up.html", num_error2=num_error2, country_codes=country_code_list)
         if "Enter valid Mail ID" in check:
-            mail_error="Enter valid Mail ID" 
-            return render_template("sign_up.html",mail_error=mail_error)
-        if "Mail id exist" in check :
-            mail_error2="Mail id already exists"
-            return render_template("sign_up.html",mail_error2=mail_error2)
+            mail_error = "Enter valid Mail ID"
+            return render_template("sign_up.html", mail_error=mail_error, country_codes=country_code_list)
+        if "Mail id exist" in check:
+            mail_error2 = "Mail id already exists"
+            return render_template("sign_up.html", mail_error2=mail_error2, country_codes=country_code_list)
         if "Inserted into DB" in check:
-            token=serial.dumps(mail,salt=config['URL_salt']['salt'])
-            msg=Message('Confirm Mail',sender=config['Mail_details']['mail_id'],recipients=[mail])
-            link=url_for('confirm_mail',token=token,_external=True)
-            msg.body='Click on the link to confirm your Mail ID {}'.format(link)
+            token = serial.dumps(mail, salt=config['URL_salt']['salt'])
+            msg = Message('Confirm Mail', sender=config['Mail_details']['mail_id'], recipients=[mail])
+            link = url_for('confirm_mail', token=token, _external=True)
+            msg.body = f"Hi {name}\nClick on the link to confirm your Mail ID {format(link)}"
             mailID.send(msg)
-            mail_send=f"Confirmation mail has been sent to {mail}"
-            return render_template("sign_up.html",mail_send=mail_send)
+            mail_send = f"Confirmation mail has been sent to {mail}.\nThe link will expire in 5 minutes"
+            return render_template("sign_up.html", mail_send=mail_send, country_codes=country_code_list)
 
 @app.route('/confirm_mail/<token>')
 def confirm_mail(token):
@@ -83,7 +104,7 @@ def confirm_mail(token):
         email=serial.loads(token, salt=config['URL_salt']['salt'],max_age=600)
     except:
         return '<h1>Token Expired</h1>'
-    return '<h1>Mail ID Verified</h1>'
+    return '<h1>Mail ID Verified</h1><p>You can now login to the page</p>'
 
 
 @app.route('/resetpassworddetails', methods=["POST"])
