@@ -7,11 +7,11 @@
 </head>
 
 <body>
-	<div class="container mt-5">
+	<div class="container md-5 sm-5">
 		<center><h1 class="mb-4">SIGN UP</h1></center>
 		<form action="http://127.0.0.1:5000/signuppage" method="POST">
 			
-			<div class="mb-3">
+			<div class="mb-3 sm-3">
 				<label class="form-label">User Name</label>
 				<input type="text" class="form-control input_box" name="name">
 				{% if user_error %}
@@ -19,12 +19,12 @@
 				{% endif %}
 			</div>
 			
-			<div class="mb-3">
+			<div class="mb-3 sm-3">
 				<label class="form-label">Password</label>
 				<input type="password" class="form-control input_box" name="password" placeholder="Password must have minimum 10 characters">
 			</div>
 			
-			<div class="mb-3">
+			<div class="mb-3 sm-3">
 				<label class="form-label">Confirm Password</label>
 				<input type="password" class="form-control input_box" name="confirm_password">
 				{% if pass_error %}
@@ -65,9 +65,6 @@
 			</div>
 			<div class="mb-3 text-center">
 				<input type="submit" class="btn btn-primary button" value="SIGN IN">
-				{% if mail_send %}
-				<div style="color:green">{{ mail_send }}</div>
-				{% endif %}
 			</div>
 		</form>
 	</div>

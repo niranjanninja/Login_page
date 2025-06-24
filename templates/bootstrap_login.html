@@ -27,6 +27,7 @@
 						<a href="http://127.0.0.1:5000/reset" class="forgot_button">Forgot password?</a>
 					</div>
 					{% if pass_update %} <div class="text-success">{{ pass_update }}</div> {% endif %}
+					{% if mail_send %} <div style="color:green">{{ mail_send }}</div> {% endif %} 
 				</form>
 			</div>
 			<div class="col-md-1 d-none d-md-flex justify-content-center">
